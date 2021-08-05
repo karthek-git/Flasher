@@ -1,0 +1,7 @@
+<resources>
+	<style name="Theme.Flasher" parent="Theme.AppCompat.DayNight.NoActionBar">
+		<item name="colorPrimary">@color/blue_600</item>
+		<item name="android:windowBackground">@android:color/white</item>
+		<item name="android:windowActivityTransitions">true</item>
+	</style>
+</resources>

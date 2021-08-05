@@ -1,0 +1,22 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: Flasher
+Upstream-Contact: karthek <mail@karthek.com>
+Source: https://gitlab.com/karthek/Flasher
+
+Files: *
+Copyright: Karthik Alapati
+License: GPL-3.0-or-later
+
+Files: gradle/wrapper/gradle-wrapper.jar
+Copyright: the original author or authors
+License: GPL-3.0-or-later
+
+
+Files: gradlew 
+	gradlew.bat
+Copyright: 2015 the original author or authors
+License: GPL-3.0-or-later
+
+Files: app/src/main/java/com/karthek/android/s/flasher/helpers/UsbMassStorageDevice.kt
+Copyright: 2014-2019 magnusja <github@mgns.tech>
+License: GPL-3.0-or-later

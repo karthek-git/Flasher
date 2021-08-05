@@ -1,0 +1,5 @@
+<resources>
+	<string name="app_name">Flasher</string>
+	<string name="title_activity_settings">SettingsActivity</string>
+	<string name="title_activity_licenses">LicensesActivity</string>
+</resources>
