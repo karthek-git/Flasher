@@ -19,6 +19,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.Usb
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.rememberCoroutineScope
@@ -99,12 +100,16 @@ fun TopBar() {
 			IconButton(onClick = {
 				context.startActivity(Intent(context, SettingsActivity::class.java))
 			}) {
-				Icon(
-					imageVector = Icons.Outlined.MoreVert,
-					contentDescription = "",
-					tint = MaterialTheme.colors.onSurface,
-					modifier = Modifier
-						.padding(start = 8.dp, end = 16.dp)
+				CompositionLocalProvider(
+					LocalContentAlpha provides ContentAlpha.high,
+					content = {
+						Icon(
+							imageVector = Icons.Outlined.MoreVert,
+							contentDescription = "",
+							modifier = Modifier
+								.padding(start = 8.dp, end = 16.dp)
+						)
+					}
 				)
 			}
 		}

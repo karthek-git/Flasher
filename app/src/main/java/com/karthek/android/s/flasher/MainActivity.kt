@@ -23,9 +23,8 @@ class MainActivity : ComponentActivity() {
 		setContent {
 			FlasherTheme {
 				val systemUiController = rememberSystemUiController()
-				val useDarkIcons = MaterialTheme.colors.isLight
 				SideEffect {
-					systemUiController.setSystemBarsColor(Color.Transparent, useDarkIcons)
+					systemUiController.setSystemBarsColor(Color.Transparent, false)
 				}
 				ProvideWindowInsets {
 					Surface(color = MaterialTheme.colors.background) {

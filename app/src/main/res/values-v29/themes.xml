@@ -4,7 +4,6 @@
 		<item name="colorPrimary">@color/blue_600</item>
 		<item name="android:statusBarColor">@android:color/transparent</item>
 		<item name="android:navigationBarColor">@android:color/transparent</item>
-		<item name="android:windowLightStatusBar">true</item>
 		<item name="android:windowLightNavigationBar">true</item>
 		<item name="android:windowBackground">@android:color/white</item>
 		<item name="android:windowActivityTransitions">true</item>
