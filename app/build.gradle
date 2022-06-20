@@ -11,7 +11,7 @@ android {
         applicationId "com.karthek.android.s.flasher"
         minSdk 21
         targetSdk 30
-        versionCode 3
+        versionCode 4
         versionName "1.0.2"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
