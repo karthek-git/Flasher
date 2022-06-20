@@ -2,6 +2,7 @@ package com.karthek.android.s.flasher
 
 import android.app.Activity
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -64,6 +65,11 @@ class SettingsActivity : ComponentActivity() {
         CommonScaffold(activity = this, name = "About") { paddingValues ->
             Column(modifier = Modifier.padding(paddingValues)) {
                 AboutItem(text = "Version", secondaryText = version)
+				AboutItem(text = "Privacy Policy", modifier = Modifier.clickable {
+					val uri =
+						Uri.parse("https://policies.karthek.com/Flasher/-/blob/master/privacy.md")
+					startActivity(Intent(Intent.ACTION_VIEW, uri))
+				})
                 AboutItem(
                     text = "Open source licenses",
                     modifier = Modifier.clickable { startLicensesActivity() }
