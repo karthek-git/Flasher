@@ -5,6 +5,9 @@ plugins {
 }
 
 android {
+
+    namespace 'com.karthek.android.s.flasher'
+
     compileSdk 31
 
     defaultConfig {
