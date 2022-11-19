@@ -9,6 +9,7 @@ import android.content.IntentFilter
 import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbManager
 import android.net.Uri
+import android.os.Build
 import android.provider.OpenableColumns
 import android.util.Log
 import androidx.compose.runtime.getValue
@@ -30,8 +31,13 @@ class SelectionViewModel(private val appContext: Application) : AndroidViewModel
 
 	fun onSelectDevice(index: Int) {
 		val device = devices[index]
+		val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+			PendingIntent.FLAG_MUTABLE
+		} else {
+			0
+		}
 		val permissionIntent =
-			PendingIntent.getBroadcast(appContext, 0, Intent(ACTION_USB_PERMISSION), 0)
+			PendingIntent.getBroadcast(appContext, 0, Intent(ACTION_USB_PERMISSION), flags)
 		appContext.registerReceiver(usbReceiver, IntentFilter(ACTION_USB_PERMISSION))
 		val usbManager = appContext.getSystemService(Context.USB_SERVICE) as UsbManager
 		usbManager.requestPermission(device.usbDevice, permissionIntent)

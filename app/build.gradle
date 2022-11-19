@@ -8,12 +8,12 @@ android {
 
     namespace 'com.karthek.android.s.flasher'
 
-    compileSdk 31
+    compileSdk 33
 
     defaultConfig {
         applicationId "com.karthek.android.s.flasher"
         minSdk 21
-        targetSdk 30
+        targetSdk 33
         versionCode 4
         versionName "1.0.2"
 
@@ -67,7 +67,7 @@ dependencies {
     implementation "androidx.compose.material:material-icons-extended:$compose_version"
     implementation 'androidx.activity:activity-compose:1.3.1'
     implementation "androidx.compose.runtime:runtime-livedata:$compose_version"
-    implementation 'androidx.work:work-runtime-ktx:2.6.0'
+    implementation 'androidx.work:work-runtime-ktx:2.7.1'
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
