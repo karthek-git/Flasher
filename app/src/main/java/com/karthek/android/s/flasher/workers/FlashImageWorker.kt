@@ -79,7 +79,7 @@ class FlashImageWorker(appContext: Context, params: WorkerParameters) :
 
 		val notification =
 			NotificationCompat.Builder(applicationContext, NOTIFICATION_CHANNEL_ID_FLASH)
-				.setSmallIcon(R.drawable.ic_launcher_foreground)
+				.setSmallIcon(R.drawable.ic_stat_default)
 				.setContentTitle("Flashing...")
 				.setContentText(text)
 				.setOngoing(true)
