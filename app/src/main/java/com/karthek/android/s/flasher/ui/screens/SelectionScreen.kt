@@ -73,8 +73,7 @@ fun SelectionScreen(viewModel: SelectionViewModel) {
 
 	if (openBottomSheet) {
 		ModalBottomSheetLayout(
-			onDismissRequest = { openBottomSheet = false },
-			sheetState = sheetState
+			onDismissRequest = { openBottomSheet = false }, sheetState = sheetState
 		) {
 			DeviceSelectionSheet(deviceList = viewModel.devices) {
 				viewModel.onSelectDevice(it)
@@ -106,8 +105,7 @@ fun SelectionScreen(viewModel: SelectionViewModel) {
 				openBottomSheet = true
 			}
 			SelectImage(enabled = !flashing, viewModel = viewModel)
-			if (selectedDevice != null && selectedImage != null && !flashing)
-			FlashButton(
+			if (selectedDevice != null && selectedImage != null && !flashing) FlashButton(
 				onClick = viewModel::onFlashClick,
 				modifier = Modifier.align(Alignment.CenterHorizontally)
 			)
@@ -127,17 +125,14 @@ fun SelectionScreen(viewModel: SelectionViewModel) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TopBar(scrollBehavior: TopAppBarScrollBehavior) {
-	TopAppBar(
-		title = { Text(text = stringResource(id = R.string.app_name)) },
-		actions = {
-			val context = LocalContext.current
-			IconButton(onClick = {
-				context.startActivity(Intent(context, SettingsActivity::class.java))
-			}) {
-				Icon(imageVector = Icons.Outlined.MoreVert, contentDescription = "")
-			}
-		},
-		scrollBehavior = scrollBehavior
+	TopAppBar(title = { Text(text = stringResource(id = R.string.app_name)) }, actions = {
+		val context = LocalContext.current
+		IconButton(onClick = {
+			context.startActivity(Intent(context, SettingsActivity::class.java))
+		}) {
+			Icon(imageVector = Icons.Outlined.MoreVert, contentDescription = "")
+		}
+	}, scrollBehavior = scrollBehavior
 	)
 }
 
@@ -166,8 +161,7 @@ fun SelectionCard(enabled: Boolean, title: String, text: String, onClick: () -> 
 					.padding(8.dp)
 			) {
 				Text(
-					text = text,
-					style = MaterialTheme.typography.labelLarge
+					text = text, style = MaterialTheme.typography.labelLarge
 				)
 			}
 		}
@@ -206,9 +200,7 @@ fun FlashButton(onClick: () -> Unit, modifier: Modifier) {
 
 @Composable
 fun FlashingState(
-	workInfo: WorkInfo,
-	onConfirm: () -> Unit,
-	modifier: Modifier
+	workInfo: WorkInfo, onConfirm: () -> Unit, modifier: Modifier
 ) {
 	when (workInfo.state) {
 		WorkInfo.State.SUCCEEDED -> {
@@ -217,8 +209,7 @@ fun FlashingState(
 
 		WorkInfo.State.RUNNING -> {
 			FlashProgress(
-				progress = workInfo.progress.getFloat(PROGRESS_TAG, 0f),
-				modifier = modifier
+				progress = workInfo.progress.getFloat(PROGRESS_TAG, 0f), modifier = modifier
 			)
 		}
 
@@ -240,8 +231,7 @@ fun FlashingState(
 fun FlashSuccessDialog(text: String, onConfirm: () -> Unit) {
 	Dialog(onDismissRequest = onConfirm) {
 		Column(
-			horizontalAlignment = Alignment.CenterHorizontally,
-			modifier = Modifier
+			horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier
 				.background(
 					color = MaterialTheme.colorScheme.surface
 						.copy(0.88f)
@@ -253,8 +243,7 @@ fun FlashSuccessDialog(text: String, onConfirm: () -> Unit) {
 			Text(
 				text = text,
 				style = MaterialTheme.typography.bodyLarge,
-				modifier = Modifier
-					.padding(top = 32.dp, bottom = 16.dp)
+				modifier = Modifier.padding(top = 32.dp, bottom = 16.dp)
 			)
 			TextButton(
 				onClick = onConfirm, modifier = Modifier
@@ -273,7 +262,8 @@ fun FlashProgress(progress: Float, modifier: Modifier) {
 	Column(modifier = modifier) {
 		Text(text = "Writing Image...", style = MaterialTheme.typography.titleSmall)
 		LinearProgressIndicator(
-			progress = progress, modifier = Modifier
+			progress = progress,
+			modifier = Modifier
 				.padding(vertical = 16.dp)
 				.height(8.dp)
 				.clip(RoundedCornerShape(4.dp))
@@ -348,9 +338,7 @@ fun DeviceItem(device: UsbMassStorageDevice, onClick: () -> Unit) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ModalBottomSheetLayout(
-	onDismissRequest: () -> Unit,
-	sheetState: SheetState,
-	sheetContent: @Composable () -> Unit
+	onDismissRequest: () -> Unit, sheetState: SheetState, sheetContent: @Composable () -> Unit
 ) {
 	val coroutineScope = rememberCoroutineScope()
 	BackHandler(enabled = sheetState.isVisible) {
