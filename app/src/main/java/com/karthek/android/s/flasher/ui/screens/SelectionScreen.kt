@@ -14,20 +14,39 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.Usb
+import androidx.compose.material3.Button
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SheetState
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarScrollBehavior
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -36,9 +55,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.work.WorkInfo
-import com.google.accompanist.insets.LocalWindowInsets
-import com.google.accompanist.insets.rememberInsetsPaddingValues
-import com.google.accompanist.insets.ui.TopAppBar
 import com.karthek.android.s.flasher.R
 import com.karthek.android.s.flasher.SettingsActivity
 import com.karthek.android.s.flasher.helpers.UsbMassStorageDevice
@@ -48,142 +64,137 @@ import com.karthek.android.s.flasher.state.selectedImage
 import com.karthek.android.s.flasher.workers.PROGRESS_TAG
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SelectionScreen(viewModel: SelectionViewModel) {
 	val coroutineScope = rememberCoroutineScope()
-	val sheetState = rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
-	ModalBottomSheetLayout(
-		sheetState = sheetState,
-		sheetContent = {
+	var openBottomSheet by rememberSaveable { mutableStateOf(false) }
+	val sheetState = rememberModalBottomSheetState()
+
+	if (openBottomSheet) {
+		ModalBottomSheetLayout(
+			onDismissRequest = { openBottomSheet = false },
+			sheetState = sheetState
+		) {
 			DeviceSelectionSheet(deviceList = viewModel.devices) {
 				viewModel.onSelectDevice(it)
-				coroutineScope.launch { sheetState.hide() }
+				coroutineScope.launch {
+					sheetState.hide()
+				}.invokeOnCompletion {
+					if (!(sheetState.isVisible)) {
+						openBottomSheet = false
+					}
+				}
 			}
-		}) {
-		Scaffold(topBar = { TopBar() }) {
-			val scrollState = rememberScrollState()
-			Column(modifier = Modifier.verticalScroll(scrollState)) {
-				val flashWorkData by viewModel.flashProgress.observeAsState()
-				val flashing = !flashWorkData.isNullOrEmpty()
-				SelectDevice(enabled = !flashing, selectedDevice) {
-					coroutineScope.launch { sheetState.show() }
-				}
-				SelectImage(enabled = !flashing, viewModel = viewModel)
-				if (selectedDevice != null && selectedImage != null && !flashing)
-					FlashButton(
-						onClick = viewModel::onFlashClick,
-						modifier = Modifier.align(Alignment.CenterHorizontally)
-					)
-				if (flashing) {
-					FlashingState(
-						workInfo = flashWorkData!![0],
-						viewModel::onSuccessConfirmed,
-						modifier = Modifier
-							.padding(32.dp)
-							.align(Alignment.CenterHorizontally)
-					)
-				}
+		}
+	}
+
+	val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+	Scaffold(
+		topBar = { TopBar(scrollBehavior) },
+		modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
+	) { paddingValues ->
+		val scrollState = rememberScrollState()
+		Column(
+			modifier = Modifier
+				.padding(paddingValues)
+				.verticalScroll(scrollState)
+		) {
+			val flashWorkData by viewModel.flashProgress.observeAsState()
+			val flashing = !flashWorkData.isNullOrEmpty()
+			SelectDevice(enabled = !flashing, selectedDevice) {
+				openBottomSheet = true
+			}
+			SelectImage(enabled = !flashing, viewModel = viewModel)
+			if (selectedDevice != null && selectedImage != null && !flashing)
+			FlashButton(
+				onClick = viewModel::onFlashClick,
+				modifier = Modifier.align(Alignment.CenterHorizontally)
+			)
+			if (flashing) {
+				FlashingState(
+					workInfo = flashWorkData!![0],
+					viewModel::onSuccessConfirmed,
+					modifier = Modifier
+						.padding(32.dp)
+						.align(Alignment.CenterHorizontally)
+				)
 			}
 		}
 	}
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopBar() {
+fun TopBar(scrollBehavior: TopAppBarScrollBehavior) {
 	TopAppBar(
 		title = { Text(text = stringResource(id = R.string.app_name)) },
-		contentPadding = rememberInsetsPaddingValues(insets = LocalWindowInsets.current.statusBars),
-		elevation = 8.dp,
 		actions = {
 			val context = LocalContext.current
 			IconButton(onClick = {
 				context.startActivity(Intent(context, SettingsActivity::class.java))
 			}) {
-				CompositionLocalProvider(
-					LocalContentAlpha provides ContentAlpha.high,
-					content = {
-						Icon(
-							imageVector = Icons.Outlined.MoreVert,
-							contentDescription = "",
-							modifier = Modifier
-								.padding(start = 8.dp, end = 16.dp)
-						)
-					}
-				)
+				Icon(imageVector = Icons.Outlined.MoreVert, contentDescription = "")
 			}
-		}
+		},
+		scrollBehavior = scrollBehavior
 	)
 }
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun SelectDevice(enabled: Boolean, selectedDevice: UsbMassStorageDevice?, onClick: () -> Unit) {
+fun SelectionCard(enabled: Boolean, title: String, text: String, onClick: () -> Unit) {
 	Column(modifier = Modifier.padding(16.dp)) {
 		Text(
-			text = "USB device",
-			style = MaterialTheme.typography.subtitle2,
+			text = title,
+			style = MaterialTheme.typography.titleSmall,
 			modifier = Modifier.padding(start = 8.dp)
 		)
-		Card(
-			enabled = enabled,
-			onClick = onClick,
+		ElevatedCard(
 			modifier = Modifier
 				.fillMaxWidth()
 				.height(80.dp)
-				.padding(vertical = 8.dp),
+				.padding(vertical = 8.dp)
+				.clickable(enabled = enabled, onClick = onClick),
 			shape = RoundedCornerShape(8.dp),
-			elevation = 8.dp
+			elevation = CardDefaults.elevatedCardElevation(4.dp)
 		) {
 			Row(
 				horizontalArrangement = Arrangement.Center,
 				verticalAlignment = Alignment.CenterVertically,
-				modifier = Modifier.padding(8.dp)
+				modifier = Modifier
+					.fillMaxSize()
+					.padding(8.dp)
 			) {
 				Text(
-					text = selectedDevice?.usbDevice?.fullName() ?: "SELECT USB DEVICE",
-					style = MaterialTheme.typography.button
+					text = text,
+					style = MaterialTheme.typography.labelLarge
 				)
 			}
 		}
 	}
 }
 
-@OptIn(ExperimentalMaterialApi::class)
+
+@Composable
+fun SelectDevice(enabled: Boolean, selectedDevice: UsbMassStorageDevice?, onClick: () -> Unit) {
+	SelectionCard(
+		enabled = enabled,
+		title = "USB device",
+		text = selectedDevice?.usbDevice?.fullName() ?: "SELECT USB DEVICE",
+		onClick = onClick
+	)
+}
+
 @Composable
 fun SelectImage(enabled: Boolean, viewModel: SelectionViewModel) {
 	val launcher =
 		rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri ->
 			uri?.let { viewModel.putSelectedImage(it) }
 		}
-	Column(modifier = Modifier.padding(16.dp)) {
-		Text(
-			text = "Image",
-			style = MaterialTheme.typography.subtitle2,
-			modifier = Modifier.padding(start = 8.dp)
-		)
-		Card(
-			enabled = enabled,
-			onClick = { launcher.launch("application/*") },
-			modifier = Modifier
-				.fillMaxWidth()
-				.height(80.dp)
-				.padding(vertical = 8.dp),
-			shape = RoundedCornerShape(8.dp),
-			elevation = 8.dp
-		) {
-			Row(
-				horizontalArrangement = Arrangement.Center,
-				verticalAlignment = Alignment.CenterVertically,
-				modifier = Modifier.padding(8.dp)
-			) {
-				Text(
-					text = selectedImage?.name ?: "SELECT ISO IMAGE",
-					style = MaterialTheme.typography.button
-				)
-			}
-		}
-	}
+	SelectionCard(enabled = enabled,
+		title = "Image",
+		text = selectedImage?.name ?: "SELECT ISO IMAGE",
+		onClick = { launcher.launch("application/*") })
 }
 
 @Composable
@@ -203,18 +214,22 @@ fun FlashingState(
 		WorkInfo.State.SUCCEEDED -> {
 			FlashSuccessDialog("Image written successfully", onConfirm)
 		}
+
 		WorkInfo.State.RUNNING -> {
 			FlashProgress(
 				progress = workInfo.progress.getFloat(PROGRESS_TAG, 0f),
 				modifier = modifier
 			)
 		}
+
 		WorkInfo.State.CANCELLED -> {
 			FlashSuccessDialog(text = "Image write cancelled", onConfirm)
 		}
+
 		WorkInfo.State.FAILED -> {
 			FlashSuccessDialog(text = "Failed to write Image", onConfirm)
 		}
+
 		else -> {
 			Log.v("state", "is ${workInfo.state}")
 		}
@@ -228,16 +243,16 @@ fun FlashSuccessDialog(text: String, onConfirm: () -> Unit) {
 			horizontalAlignment = Alignment.CenterHorizontally,
 			modifier = Modifier
 				.background(
-					color = MaterialTheme.colors.surface
+					color = MaterialTheme.colorScheme.surface
 						.copy(0.88f)
-						.compositeOver(MaterialTheme.colors.onSurface),
+						.compositeOver(MaterialTheme.colorScheme.onSurface),
 					shape = RoundedCornerShape(16.dp)
 				)
 				.padding(horizontal = 2.dp)
 		) {
 			Text(
 				text = text,
-				style = MaterialTheme.typography.body1,
+				style = MaterialTheme.typography.bodyLarge,
 				modifier = Modifier
 					.padding(top = 32.dp, bottom = 16.dp)
 			)
@@ -252,10 +267,11 @@ fun FlashSuccessDialog(text: String, onConfirm: () -> Unit) {
 	}
 }
 
+
 @Composable
 fun FlashProgress(progress: Float, modifier: Modifier) {
 	Column(modifier = modifier) {
-		Text(text = "Writing Image...", style = MaterialTheme.typography.subtitle2)
+		Text(text = "Writing Image...", style = MaterialTheme.typography.titleSmall)
 		LinearProgressIndicator(
 			progress = progress, modifier = Modifier
 				.padding(vertical = 16.dp)
@@ -277,17 +293,15 @@ fun DeviceSelectionSheet(deviceList: Array<UsbMassStorageDevice>, onClick: (Int)
 		)
 	} else {
 		LazyColumn(
-			contentPadding = rememberInsetsPaddingValues(
-				insets = LocalWindowInsets.current.navigationBars,
-			), modifier = Modifier
+			modifier = Modifier
 				.defaultMinSize(minHeight = 180.dp)
 				.padding(vertical = 8.dp)
 		) {
 			item {
 				Text(
 					text = "DEVICES",
-					color = MaterialTheme.colors.primary,
-					style = MaterialTheme.typography.body2,
+					color = MaterialTheme.colorScheme.primary,
+					style = MaterialTheme.typography.bodyMedium,
 					modifier = Modifier.padding(start = 16.dp, top = 8.dp)
 				)
 			}
@@ -322,7 +336,7 @@ fun DeviceItem(device: UsbMassStorageDevice, onClick: () -> Unit) {
 			)
 			Text(
 				text = device.usbDevice.deviceName,
-				style = MaterialTheme.typography.caption,
+				style = MaterialTheme.typography.bodySmall,
 				maxLines = 1,
 				overflow = TextOverflow.Ellipsis,
 				modifier = Modifier.alpha(0.7f)
@@ -331,29 +345,24 @@ fun DeviceItem(device: UsbMassStorageDevice, onClick: () -> Unit) {
 	}
 }
 
-@ExperimentalMaterialApi
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ModalBottomSheetLayout(
-	sheetState: ModalBottomSheetState,
-	sheetContent: @Composable () -> Unit,
-	content: @Composable () -> Unit
+	onDismissRequest: () -> Unit,
+	sheetState: SheetState,
+	sheetContent: @Composable () -> Unit
 ) {
 	val coroutineScope = rememberCoroutineScope()
 	BackHandler(enabled = sheetState.isVisible) {
 		coroutineScope.launch { sheetState.hide() }
 	}
-	val scrimColor = if (MaterialTheme.colors.isLight) {
-		MaterialTheme.colors.onSurface.copy(alpha = 0.32f)
-	} else {
-		MaterialTheme.colors.surface.copy(alpha = 0.5f)
-	}
-	ModalBottomSheetLayout(
+	val systemBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+	ModalBottomSheet(
+		onDismissRequest = onDismissRequest,
 		sheetState = sheetState,
-		sheetShape = RoundedCornerShape(8.dp),
-		scrimColor = scrimColor,
-		sheetContent = { sheetContent() }) {
-		content()
-	}
+		content = { sheetContent() },
+		modifier = Modifier.offset(y = systemBarHeight)
+	)
 }
 
 fun UsbDevice.fullName() = "$manufacturerName $productName"

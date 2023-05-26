@@ -38,13 +38,12 @@ android {
 
     kotlinOptions {
         jvmTarget = '1.8'
-        useIR = true
     }
     buildFeatures {
         compose true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion compose_version
+        kotlinCompilerExtensionVersion "1.4.7"
     }
 
     packagingOptions {
@@ -62,22 +61,24 @@ android {
 
 dependencies {
 
-    implementation "androidx.compose.ui:ui:$compose_version"
-    implementation "androidx.compose.material:material:$compose_version"
-    implementation "androidx.compose.material:material-icons-extended:$compose_version"
-    implementation 'androidx.activity:activity-compose:1.3.1'
-    implementation "androidx.compose.runtime:runtime-livedata:$compose_version"
-    implementation 'androidx.work:work-runtime-ktx:2.7.1'
-    testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
-    androidTestImplementation "androidx.compose.ui:ui-test-junit4:$compose_version"
-    debugImplementation "androidx.compose.ui:ui-tooling:$compose_version"
+    def composeBom = platform('androidx.compose:compose-bom:2023.05.01')
+    implementation composeBom
+    androidTestImplementation composeBom
 
-    implementation "com.google.accompanist:accompanist-insets-ui:$accompanist_version"
-    implementation "com.google.accompanist:accompanist-systemuicontroller:$accompanist_version"
+    implementation "androidx.compose.material3:material3"
+    implementation "androidx.compose.material:material-icons-extended"
+    implementation "androidx.activity:activity-compose:1.7.1"
+    implementation "androidx.compose.runtime:runtime-livedata"
+    implementation "androidx.work:work-runtime-ktx:2.8.1"
+    testImplementation "junit:junit:4.13.2"
+    androidTestImplementation "androidx.test.ext:junit:1.1.5"
+    androidTestImplementation "androidx.test.espresso:espresso-core:3.5.1"
+    androidTestImplementation "androidx.compose.ui:ui-test-junit4"
+    debugImplementation "androidx.compose.ui:ui-tooling"
 
-    implementation 'com.mikepenz:aboutlibraries-core:8.9.1'
+    implementation "com.google.accompanist:accompanist-systemuicontroller:0.27.0"
+
+    implementation "com.mikepenz:aboutlibraries-core:10.7.0"
     implementation 'me.jahnen:libaums:0.8.0'
     implementation 'me.jahnen:libaums-libusbcommunication:0.1'
 }
