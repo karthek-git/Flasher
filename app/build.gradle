@@ -76,7 +76,7 @@ dependencies {
     androidTestImplementation "androidx.compose.ui:ui-test-junit4"
     debugImplementation "androidx.compose.ui:ui-tooling"
 
-    implementation "com.google.accompanist:accompanist-systemuicontroller:0.27.0"
+    implementation "com.google.accompanist:accompanist-systemuicontroller:0.30.1"
 
     implementation "com.mikepenz:aboutlibraries-core:10.7.0"
     implementation 'me.jahnen:libaums:0.8.0'

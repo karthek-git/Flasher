@@ -1,7 +1,4 @@
 buildscript {
-    ext {
-        accompanist_version = '0.15.0'
-    }
     repositories {
         google()
         mavenCentral()
@@ -12,8 +9,7 @@ buildscript {
     dependencies {
         classpath 'com.android.tools.build:gradle:8.0.2'
         classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.21'
-        classpath "com.mikepenz.aboutlibraries.plugin:aboutlibraries-plugin:10.5.1"
-
+        classpath "com.mikepenz.aboutlibraries.plugin:aboutlibraries-plugin:10.7.0"
     }
 }
 
