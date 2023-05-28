@@ -130,17 +130,14 @@ fun SelectionScreen(viewModel: SelectionViewModel) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TopBar(scrollBehavior: TopAppBarScrollBehavior) {
-	Box {
-		TopAppBar(title = { Text(text = stringResource(id = R.string.app_name)) }, actions = {
-			val context = LocalContext.current
-			IconButton(onClick = {
-				context.startActivity(Intent(context, SettingsActivity::class.java))
-			}) {
-				Icon(imageVector = Icons.Outlined.MoreVert, contentDescription = "")
-			}
-		}, scrollBehavior = scrollBehavior
-		)
-	}
+	TopAppBar(title = { Text(text = stringResource(id = R.string.app_name)) }, actions = {
+		val context = LocalContext.current
+		IconButton(onClick = {
+			context.startActivity(Intent(context, SettingsActivity::class.java))
+		}) {
+			Icon(imageVector = Icons.Outlined.MoreVert, contentDescription = "")
+		}
+	}, scrollBehavior = scrollBehavior)
 }
 
 @Composable
@@ -354,7 +351,7 @@ fun ModalBottomSheetLayout(
 	ModalBottomSheet(
 		onDismissRequest = onDismissRequest,
 		sheetState = sheetState,
-		windowInsets = WindowInsets(0,0,0,0),
+		windowInsets = WindowInsets(0, 0, 0, 0),
 		content = { sheetContent() }
 	)
 }
