@@ -93,7 +93,7 @@ fun SelectionScreen(viewModel: SelectionViewModel) {
 
 	val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 	Scaffold(
-		topBar = { TopBar(openBottomSheet, scrollBehavior) },
+		topBar = { TopBar(scrollBehavior) },
 		contentWindowInsets = ScaffoldDefaults.contentWindowInsets.exclude(WindowInsets.statusBars),
 		modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
 	) { paddingValues ->
@@ -129,7 +129,7 @@ fun SelectionScreen(viewModel: SelectionViewModel) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopBar(openBottomSheet: Boolean, scrollBehavior: TopAppBarScrollBehavior) {
+fun TopBar(scrollBehavior: TopAppBarScrollBehavior) {
 	Box {
 		TopAppBar(title = { Text(text = stringResource(id = R.string.app_name)) }, actions = {
 			val context = LocalContext.current
