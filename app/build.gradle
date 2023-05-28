@@ -65,9 +65,9 @@ dependencies {
     implementation composeBom
     androidTestImplementation composeBom
 
-    implementation "androidx.compose.material3:material3"
+    implementation "androidx.compose.material3:material3:1.2.0-alpha02"
     implementation "androidx.compose.material:material-icons-extended"
-    implementation "androidx.activity:activity-compose:1.7.1"
+    implementation "androidx.activity:activity-compose:1.7.2"
     implementation "androidx.compose.runtime:runtime-livedata"
     implementation "androidx.work:work-runtime-ktx:2.8.1"
     testImplementation "junit:junit:4.13.2"

@@ -27,6 +27,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -72,16 +73,18 @@ fun SelectionScreen(viewModel: SelectionViewModel) {
 	val sheetState = rememberModalBottomSheetState()
 
 	if (openBottomSheet) {
-		ModalBottomSheetLayout(
-			onDismissRequest = { openBottomSheet = false }, sheetState = sheetState
-		) {
-			DeviceSelectionSheet(deviceList = viewModel.devices) {
-				viewModel.onSelectDevice(it)
-				coroutineScope.launch {
-					sheetState.hide()
-				}.invokeOnCompletion {
-					if (!(sheetState.isVisible)) {
-						openBottomSheet = false
+		Column(modifier = Modifier.fillMaxSize()) {
+			ModalBottomSheetLayout(
+				onDismissRequest = { openBottomSheet = false }, sheetState = sheetState
+			) {
+				DeviceSelectionSheet(deviceList = viewModel.devices) {
+					viewModel.onSelectDevice(it)
+					coroutineScope.launch {
+						sheetState.hide()
+					}.invokeOnCompletion {
+						if (!(sheetState.isVisible)) {
+							openBottomSheet = false
+						}
 					}
 				}
 			}
@@ -90,9 +93,11 @@ fun SelectionScreen(viewModel: SelectionViewModel) {
 
 	val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 	Scaffold(
-		topBar = { TopBar(scrollBehavior) },
+		topBar = { TopBar(openBottomSheet, scrollBehavior) },
+		contentWindowInsets = ScaffoldDefaults.contentWindowInsets.exclude(WindowInsets.statusBars),
 		modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
 	) { paddingValues ->
+
 		val scrollState = rememberScrollState()
 		Column(
 			modifier = Modifier
@@ -124,16 +129,18 @@ fun SelectionScreen(viewModel: SelectionViewModel) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopBar(scrollBehavior: TopAppBarScrollBehavior) {
-	TopAppBar(title = { Text(text = stringResource(id = R.string.app_name)) }, actions = {
-		val context = LocalContext.current
-		IconButton(onClick = {
-			context.startActivity(Intent(context, SettingsActivity::class.java))
-		}) {
-			Icon(imageVector = Icons.Outlined.MoreVert, contentDescription = "")
-		}
-	}, scrollBehavior = scrollBehavior
-	)
+fun TopBar(openBottomSheet: Boolean, scrollBehavior: TopAppBarScrollBehavior) {
+	Box {
+		TopAppBar(title = { Text(text = stringResource(id = R.string.app_name)) }, actions = {
+			val context = LocalContext.current
+			IconButton(onClick = {
+				context.startActivity(Intent(context, SettingsActivity::class.java))
+			}) {
+				Icon(imageVector = Icons.Outlined.MoreVert, contentDescription = "")
+			}
+		}, scrollBehavior = scrollBehavior
+		)
+	}
 }
 
 @Composable
@@ -344,12 +351,11 @@ fun ModalBottomSheetLayout(
 	BackHandler(enabled = sheetState.isVisible) {
 		coroutineScope.launch { sheetState.hide() }
 	}
-	val systemBarHeight = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 	ModalBottomSheet(
 		onDismissRequest = onDismissRequest,
 		sheetState = sheetState,
-		content = { sheetContent() },
-		modifier = Modifier.offset(y = systemBarHeight)
+		windowInsets = WindowInsets(0,0,0,0),
+		content = { sheetContent() }
 	)
 }
 
