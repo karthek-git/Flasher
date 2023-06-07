@@ -58,7 +58,7 @@ For troubleshooting and questions, please write to me at mail@karthek.com
 
 ## License
 
-Copyright Karthik Alapati
+Copyright 2023 Karthik Alapati
 
 Licensed under the GPL-3.0-or-later: https://www.gnu.org/licenses/gpl-3.0.html
 
