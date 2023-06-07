@@ -37,7 +37,7 @@ https://github.com/karthek-git/Flasher/issues
 
 Want to live life on the bleeding edge and help out with testing?
 
-You can subscribe to Flasher Android Beta releases here:
+You can subscribe to Flasher Beta releases here:
 https://play.google.com/apps/testing/com.karthek.android.s.flasher
 
 For stability, stick with the public releases.
