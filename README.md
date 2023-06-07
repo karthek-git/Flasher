@@ -1,8 +1,6 @@
 # Flasher
 
-Signal is a simple, powerful, and secure messenger.
-
-Flasher is a Android app to flash Linux ISO images(or any) to pen drive with 1 click.
+Flasher is an Android app to flash Linux ISO images(or any) to pen drive with 1 click.
 
 Make bootable pen drive for OS installation or Live boot images.
 
