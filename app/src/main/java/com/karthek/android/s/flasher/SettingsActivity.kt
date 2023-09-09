@@ -10,17 +10,27 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
+import com.karthek.android.s.flasher.ui.screens.ModalBottomSheetLayout
 import com.karthek.android.s.flasher.ui.theme.AppTheme
 
 class SettingsActivity : ComponentActivity() {
@@ -68,6 +78,11 @@ class SettingsActivity : ComponentActivity() {
 				ListItem(headlineContent = { Text(text = "Open source licenses") },
 					modifier = Modifier.clickable { startLicensesActivity() }
 				)
+				Divider()
+				LicenseBottomSheet {
+					val uri = Uri.parse("https://www.gnu.org/licenses/gpl-3.0.html")
+					startActivity(Intent(Intent.ACTION_VIEW, uri))
+				}
 			}
 		}
 	}
@@ -96,5 +111,54 @@ fun CommonScaffold(activity: Activity, name: String, content: @Composable (Paddi
 	) {
 		content(it)
 	}
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun LicenseBottomSheet(onClick: () -> Unit) {
+	var openBottomSheet by rememberSaveable { mutableStateOf(false) }
+	val sheetState = rememberModalBottomSheetState()
+
+	ListItem(headlineContent = { Text(text = "Legal") },
+		modifier = Modifier.clickable { openBottomSheet = true }
+	)
+
+	if (openBottomSheet) {
+		ModalBottomSheetLayout(
+			onDismissRequest = { openBottomSheet = false },
+			sheetState = sheetState
+		) {
+			LicenseText(onClick)
+		}
+	}
+}
+
+@Composable
+fun LicenseText(onClick: () -> Unit) {
+	val annotatedLicenseText = buildAnnotatedString {
+		val baseStyle = SpanStyle(color = MaterialTheme.colorScheme.onSurface)
+		withStyle(style = baseStyle) {
+			append("Copyright © Karthik Alapati\n\n")
+			append("This application comes with absolutely no warranty. See the")
+		}
+
+		pushStringAnnotation(tag = "lic3", annotation = "link")
+		withStyle(style = SpanStyle(color = MaterialTheme.colorScheme.primary)) {
+			append(" GNU General Public License, version 3 or later ")
+		}
+		pop()
+
+		withStyle(style = baseStyle) {
+			append("for details.")
+		}
+	}
+	ClickableText(
+		text = annotatedLicenseText,
+		style = MaterialTheme.typography.labelLarge,
+		onClick = { onClick() },
+		modifier = Modifier
+			.padding(16.dp)
+			.padding(bottom = 16.dp)
+	)
 }
 
