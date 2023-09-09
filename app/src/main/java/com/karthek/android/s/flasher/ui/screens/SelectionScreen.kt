@@ -18,8 +18,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.Usb
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -140,6 +140,7 @@ fun TopBar(scrollBehavior: TopAppBarScrollBehavior) {
 	}, scrollBehavior = scrollBehavior)
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SelectionCard(enabled: Boolean, title: String, text: String, onClick: () -> Unit) {
 	Column(modifier = Modifier.padding(16.dp)) {
@@ -148,14 +149,16 @@ fun SelectionCard(enabled: Boolean, title: String, text: String, onClick: () -> 
 			style = MaterialTheme.typography.titleSmall,
 			modifier = Modifier.padding(start = 8.dp)
 		)
-		ElevatedCard(
+		Card(
+			onClick = onClick,
+			enabled = enabled,
+			shape = RoundedCornerShape(8.dp),
+			elevation = CardDefaults.cardElevation(4.dp),
+			colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
 			modifier = Modifier
 				.fillMaxWidth()
 				.height(80.dp)
 				.padding(vertical = 8.dp)
-				.clickable(enabled = enabled, onClick = onClick),
-			shape = RoundedCornerShape(8.dp),
-			elevation = CardDefaults.elevatedCardElevation(4.dp)
 		) {
 			Row(
 				horizontalArrangement = Arrangement.Center,
