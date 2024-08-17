@@ -7,11 +7,11 @@ package com.karthek.android.s.flasher.helpers
 import android.content.Context
 import android.hardware.usb.*
 import android.util.Log
-import com.github.mjdev.libaums.driver.BlockDeviceDriver
-import com.github.mjdev.libaums.driver.BlockDeviceDriverFactory
-import com.github.mjdev.libaums.driver.scsi.commands.sense.MediaNotInserted
-import com.github.mjdev.libaums.usb.UsbCommunication
-import com.github.mjdev.libaums.usb.UsbCommunicationFactory
+import me.jahnen.libaums.core.driver.BlockDeviceDriver
+import me.jahnen.libaums.core.driver.BlockDeviceDriverFactory
+import me.jahnen.libaums.core.driver.scsi.commands.sense.MediaNotInserted
+import me.jahnen.libaums.core.usb.UsbCommunication
+import me.jahnen.libaums.core.usb.UsbCommunicationFactory
 import java.io.IOException
 
 // copied from com.github.mjdev.libaums.UsbMassStorageDevice.kt

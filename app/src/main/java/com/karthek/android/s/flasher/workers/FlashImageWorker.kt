@@ -7,9 +7,9 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.work.*
-import com.github.mjdev.libaums.usb.UsbCommunicationFactory.UnderlyingUsbCommunication
-import com.github.mjdev.libaums.usb.UsbCommunicationFactory.registerCommunication
-import com.github.mjdev.libaums.usb.UsbCommunicationFactory.underlyingUsbCommunication
+import me.jahnen.libaums.core.usb.UsbCommunicationFactory.UnderlyingUsbCommunication
+import me.jahnen.libaums.core.usb.UsbCommunicationFactory.registerCommunication
+import me.jahnen.libaums.core.usb.UsbCommunicationFactory.underlyingUsbCommunication
 import com.karthek.android.s.flasher.R
 import com.karthek.android.s.flasher.state.selectedDevice
 import com.karthek.android.s.flasher.state.selectedImage

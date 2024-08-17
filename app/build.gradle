@@ -8,14 +8,14 @@ android {
 
     namespace 'com.karthek.android.s.flasher'
 
-    compileSdk 33
+    compileSdk 35
 
     defaultConfig {
         applicationId "com.karthek.android.s.flasher"
         minSdk 21
-        targetSdk 33
-        versionCode 8
-        versionName "1.0.5"
+        targetSdk 35
+        versionCode 9
+        versionName "1.0.6"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -41,6 +41,7 @@ android {
     }
     buildFeatures {
         compose true
+        buildConfig true
     }
     composeOptions {
         kotlinCompilerExtensionVersion "1.4.7"
@@ -61,24 +62,24 @@ android {
 
 dependencies {
 
-    def composeBom = platform('androidx.compose:compose-bom:2023.05.01')
+    def composeBom = platform('androidx.compose:compose-bom:2024.06.00')
     implementation composeBom
     androidTestImplementation composeBom
 
-    implementation "androidx.compose.material3:material3:1.2.0-alpha02"
+    implementation "androidx.compose.material3:material3:1.2.1"
     implementation "androidx.compose.material:material-icons-extended"
-    implementation "androidx.activity:activity-compose:1.7.2"
+    implementation "androidx.activity:activity-compose:1.9.1"
     implementation "androidx.compose.runtime:runtime-livedata"
-    implementation "androidx.work:work-runtime-ktx:2.8.1"
+    implementation "androidx.work:work-runtime-ktx:2.9.1"
     testImplementation "junit:junit:4.13.2"
-    androidTestImplementation "androidx.test.ext:junit:1.1.5"
-    androidTestImplementation "androidx.test.espresso:espresso-core:3.5.1"
+    androidTestImplementation "androidx.test.ext:junit:1.2.1"
+    androidTestImplementation "androidx.test.espresso:espresso-core:3.6.1"
     androidTestImplementation "androidx.compose.ui:ui-test-junit4"
     debugImplementation "androidx.compose.ui:ui-tooling"
 
     implementation "com.google.accompanist:accompanist-systemuicontroller:0.30.1"
 
     implementation "com.mikepenz:aboutlibraries-core:10.7.0"
-    implementation 'me.jahnen:libaums:0.8.0'
-    implementation 'me.jahnen:libaums-libusbcommunication:0.1'
+    implementation "me.jahnen.libaums:core:0.10.0"
+    implementation "me.jahnen.libaums:libusbcommunication:0.3.0"
 }
