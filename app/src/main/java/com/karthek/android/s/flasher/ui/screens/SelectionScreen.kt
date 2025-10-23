@@ -1,6 +1,5 @@
 package com.karthek.android.s.flasher.ui.screens
 
-import android.content.Intent
 import android.hardware.usb.UsbDevice
 import android.util.Log
 import androidx.activity.compose.BackHandler
@@ -8,7 +7,17 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.exclude
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
@@ -35,6 +44,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -48,7 +58,6 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -57,7 +66,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.work.WorkInfo
 import com.karthek.android.s.flasher.R
-import com.karthek.android.s.flasher.SettingsActivity
 import com.karthek.android.s.flasher.helpers.UsbMassStorageDevice
 import com.karthek.android.s.flasher.state.SelectionViewModel
 import com.karthek.android.s.flasher.state.selectedDevice
@@ -67,7 +75,7 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SelectionScreen(viewModel: SelectionViewModel) {
+fun SelectionScreen(viewModel: SelectionViewModel, onMoreClick: () -> Unit) {
 	val coroutineScope = rememberCoroutineScope()
 	var openBottomSheet by rememberSaveable { mutableStateOf(false) }
 	val sheetState = rememberModalBottomSheetState()
@@ -93,7 +101,7 @@ fun SelectionScreen(viewModel: SelectionViewModel) {
 
 	val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 	Scaffold(
-		topBar = { TopBar(scrollBehavior) },
+		topBar = { TopBar(scrollBehavior, onMoreClick) },
 		contentWindowInsets = ScaffoldDefaults.contentWindowInsets.exclude(WindowInsets.statusBars),
 		modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
 	) { paddingValues ->
@@ -129,12 +137,9 @@ fun SelectionScreen(viewModel: SelectionViewModel) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopBar(scrollBehavior: TopAppBarScrollBehavior) {
+fun TopBar(scrollBehavior: TopAppBarScrollBehavior, onMoreClick: () -> Unit) {
 	TopAppBar(title = { Text(text = stringResource(id = R.string.app_name)) }, actions = {
-		val context = LocalContext.current
-		IconButton(onClick = {
-			context.startActivity(Intent(context, SettingsActivity::class.java))
-		}) {
+		IconButton(onClick = onMoreClick) {
 			Icon(imageVector = Icons.Outlined.MoreVert, contentDescription = "")
 		}
 	}, scrollBehavior = scrollBehavior)
@@ -154,7 +159,11 @@ fun SelectionCard(enabled: Boolean, title: String, text: String, onClick: () -> 
 			enabled = enabled,
 			shape = RoundedCornerShape(8.dp),
 			elevation = CardDefaults.cardElevation(4.dp),
-			colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+			colors = CardDefaults.cardColors(
+				containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(
+					4.dp
+				)
+			),
 			modifier = Modifier
 				.fillMaxWidth()
 				.height(80.dp)
@@ -192,7 +201,8 @@ fun SelectImage(enabled: Boolean, viewModel: SelectionViewModel) {
 		rememberLauncherForActivityResult(contract = ActivityResultContracts.GetContent()) { uri ->
 			uri?.let { viewModel.putSelectedImage(it) }
 		}
-	SelectionCard(enabled = enabled,
+	SelectionCard(
+		enabled = enabled,
 		title = "Image",
 		text = selectedImage?.name ?: "SELECT ISO IMAGE",
 		onClick = { launcher.launch("application/*") })
@@ -354,7 +364,7 @@ fun ModalBottomSheetLayout(
 	ModalBottomSheet(
 		onDismissRequest = onDismissRequest,
 		sheetState = sheetState,
-		windowInsets = WindowInsets(0, 0, 0, 0),
+		contentWindowInsets = { WindowInsets(0, 0, 0, 0) },
 		content = { sheetContent() }
 	)
 }
