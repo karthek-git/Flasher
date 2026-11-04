@@ -4,18 +4,15 @@ import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
-import androidx.navigation3.runtime.entry
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
-import androidx.navigation3.runtime.rememberSavedStateNavEntryDecorator
+import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
-import androidx.navigation3.ui.rememberSceneSetupNavEntryDecorator
 import com.google.android.gms.ads.interstitial.InterstitialAd
 import com.karthek.android.s.flasher.LicensesContent
 import com.karthek.android.s.flasher.SettingsScreen
@@ -28,7 +25,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(viewModel: SelectionViewModel) {
 	val backStack = rememberNavBackStack(Screen.Home)
@@ -75,8 +71,7 @@ fun MainScreen(viewModel: SelectionViewModel) {
 	NavDisplay(
 		backStack = backStack,
 		entryDecorators = listOf(
-			rememberSceneSetupNavEntryDecorator(),
-			rememberSavedStateNavEntryDecorator(),
+			rememberSaveableStateHolderNavEntryDecorator(),
 			rememberViewModelStoreNavEntryDecorator()
 		),
 		transitionSpec = {
@@ -87,7 +82,7 @@ fun MainScreen(viewModel: SelectionViewModel) {
 			slideInHorizontally(initialOffsetX = { -it }) togetherWith
 					slideOutHorizontally(targetOffsetX = { it })
 		},
-		predictivePopTransitionSpec = {
+		predictivePopTransitionSpec = { _ ->
 			slideInHorizontally(initialOffsetX = { -it }) togetherWith
 					slideOutHorizontally(targetOffsetX = { it })
 		},

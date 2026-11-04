@@ -1,11 +1,16 @@
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
         google()
         mavenCentral()
-        //nedded for libaums for now
-        jcenter() // Warning: this repository is going to shut down soon
     }
 }
 rootProject.name = "Flasher"
-include ':app'
+include(":app")
