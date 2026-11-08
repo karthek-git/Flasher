@@ -16,7 +16,7 @@ android {
     defaultConfig {
         applicationId = "com.karthek.android.s.flasher"
         minSdk = 24
-        targetSdk = 36
+        targetSdk = 37
         versionCode = 11
         versionName = "1.0.7"
 
