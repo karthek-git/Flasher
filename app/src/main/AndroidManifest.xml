@@ -4,11 +4,8 @@
 
 	<uses-feature android:name="android.hardware.usb.host" />
 
-	<uses-permission
-		android:name="android.permission.ACCESS_NETWORK_STATE"
-		tools:node="remove" />
-
 	<application
+		android:name=".FlasherApplication"
 		android:allowBackup="false"
 		android:icon="@mipmap/ic_launcher"
 		android:label="@string/app_name"

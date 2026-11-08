@@ -21,6 +21,7 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.karthek.android.s.flasher.helpers.SelectedImage
 import com.karthek.android.s.flasher.helpers.UsbMassStorageDevice
+import com.karthek.android.s.flasher.ui.components.AppOpenAdManager
 import com.karthek.android.s.flasher.workers.FlashImageWorker
 
 class SelectionViewModel(private val appContext: Application) : AndroidViewModel(appContext) {
@@ -40,6 +41,7 @@ class SelectionViewModel(private val appContext: Application) : AndroidViewModel
 			PendingIntent.getBroadcast(appContext, 0, Intent(ACTION_USB_PERMISSION), flags)
 		appContext.registerReceiver(usbReceiver, IntentFilter(ACTION_USB_PERMISSION))
 		val usbManager = appContext.getSystemService(Context.USB_SERVICE) as UsbManager
+		AppOpenAdManager.suppressNextShow() // returning from the USB permission dialog
 		usbManager.requestPermission(device.usbDevice, permissionIntent)
 		selectedDevice = device
 	}

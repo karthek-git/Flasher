@@ -69,6 +69,7 @@ import com.karthek.android.s.flasher.R
 import com.karthek.android.s.flasher.helpers.UsbMassStorageDevice
 import com.karthek.android.s.flasher.state.SelectionViewModel
 import com.karthek.android.s.flasher.state.selectedDevice
+import com.karthek.android.s.flasher.ui.components.AppOpenAdManager
 import com.karthek.android.s.flasher.state.selectedImage
 import com.karthek.android.s.flasher.workers.PROGRESS_TAG
 import kotlinx.coroutines.launch
@@ -205,7 +206,10 @@ fun SelectImage(enabled: Boolean, viewModel: SelectionViewModel) {
 		enabled = enabled,
 		title = "Image",
 		text = selectedImage?.name ?: "SELECT ISO IMAGE",
-		onClick = { launcher.launch("application/*") })
+		onClick = {
+			AppOpenAdManager.suppressNextShow() // returning from the file picker
+			launcher.launch("application/*")
+		})
 }
 
 @Composable

@@ -13,7 +13,7 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
-import com.google.android.gms.ads.interstitial.InterstitialAd
+import com.google.android.libraries.ads.mobile.sdk.interstitial.InterstitialAd
 import com.karthek.android.s.flasher.LicensesContent
 import com.karthek.android.s.flasher.SettingsScreen
 import com.karthek.android.s.flasher.state.SelectionViewModel
@@ -34,7 +34,6 @@ fun MainScreen(viewModel: SelectionViewModel) {
 	var interstitialAd: InterstitialAd? = null
 	val interstitialAdLoader = {
 		loadInterstitialAd(
-			context,
 			adLoadedCallback = { interstitialAd = it },
 			adCompleteCallback = { interstitialAd = null }
 		)

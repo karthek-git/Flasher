@@ -6,6 +6,7 @@ composeBom = "2026.09.00"
 material3 = "1.4.0"
 activityCompose = "1.13.0"
 navigation3 = "1.2.0"
+lifecycle = "2.11.0"
 lifecycleViewmodelNavigation3 = "2.11.0"
 work = "2.12.0"
 kotlinxSerialization = "1.12.0"
@@ -15,7 +16,7 @@ espresso = "3.7.0"
 accompanist = "0.36.0"
 libaumsCore = "0.10.0"
 libaumsLibusb = "0.3.0"
-playServicesAds = "23.6.0"
+googleAdsGMA = "1.6.0"
 
 [libraries]
 androidx-compose-bom = { module = "androidx.compose:compose-bom", version.ref = "composeBom" }
@@ -27,7 +28,8 @@ androidx-compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
 androidx-navigation3-runtime = { module = "androidx.navigation3:navigation3-runtime", version.ref = "navigation3" }
 androidx-navigation3-ui = { module = "androidx.navigation3:navigation3-ui", version.ref = "navigation3" }
-androidx-lifecycle-viewmodel-navigation3 = { module = "androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "lifecycleViewmodelNavigation3" }
+androidx-lifecycle-process = { module = "androidx.lifecycle:lifecycle-process", version.ref = "lifecycle" }
+androidx-lifecycle-viewmodel-navigation3 ={ module = "androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "lifecycleViewmodelNavigation3" }
 androidx-work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "work" }
 kotlinx-serialization-core = { module = "org.jetbrains.kotlinx:kotlinx-serialization-core", version.ref = "kotlinxSerialization" }
 junit = { module = "junit:junit", version.ref = "junit" }
@@ -37,7 +39,7 @@ accompanist-systemuicontroller = { module = "com.google.accompanist:accompanist-
 aboutlibraries-core = { module = "com.mikepenz:aboutlibraries-core", version.ref = "aboutlibraries" }
 libaums-core = { module = "me.jahnen.libaums:core", version.ref = "libaumsCore" }
 libaums-libusbcommunication = { module = "me.jahnen.libaums:libusbcommunication", version.ref = "libaumsLibusb" }
-play-services-ads = { module = "com.google.android.gms:play-services-ads", version.ref = "playServicesAds" }
+google-ads-gma = { module = "com.google.android.libraries.ads.mobile.sdk:ads-mobile-sdk", version.ref = "googleAdsGMA" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
