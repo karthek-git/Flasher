@@ -1,13 +1,17 @@
 package com.karthek.android.s.flasher.ui.screens
 
+import android.os.SystemClock
 import androidx.activity.compose.LocalActivity
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
@@ -19,51 +23,41 @@ import com.karthek.android.s.flasher.SettingsScreen
 import com.karthek.android.s.flasher.state.SelectionViewModel
 import com.karthek.android.s.flasher.ui.components.loadInterstitialAd
 import com.karthek.android.s.flasher.ui.screens.navigation.Screen
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
+// Minimum gap between interstitials.
+private const val INTERSTITIAL_MIN_INTERVAL_MS = 3 * 60 * 1000L
 
 @Composable
 fun MainScreen(viewModel: SelectionViewModel) {
 	val backStack = rememberNavBackStack(Screen.Home)
 	val onBackClick = { backStack.removeLastOrNull(); Unit }
 
-	val context = LocalContext.current
-	var interstitialAd: InterstitialAd? = null
-	val interstitialAdLoader = {
+	var interstitialAd by remember { mutableStateOf<InterstitialAd?>(null) }
+	var lastInterstitialAt by remember { mutableLongStateOf(0L) }
+	val activity = LocalActivity.current
+	val loadAd = {
 		loadInterstitialAd(
 			adLoadedCallback = { interstitialAd = it },
 			adCompleteCallback = { interstitialAd = null }
 		)
 	}
-	val activity = LocalActivity.current
-	var adTimer = true
-	val backgroundScope = rememberCoroutineScope()
+	// Preload only. Never shown on launch or on a timer (AdMob policy:
+	// unexpected launch interstitials / accidental clicks).
+	LaunchedEffect(Unit) { loadAd() }
+
+	// Shown only at a natural break (leaving Settings), at most once per interval.
 	val showInterstitialAd = {
-		interstitialAd?.let {
-			if (adTimer) {
-				it.show(activity!!)
-				adTimer = false
-			}
-		}
-		interstitialAdLoader()
-	}
-	LaunchedEffect(context) {
-		interstitialAdLoader()
-		backgroundScope.launch {
-			delay(5000)
-			showInterstitialAd()
-		}
-		backgroundScope.launch(Dispatchers.Default) {
-			while (true) {
-				delay(60000)
-				adTimer = true
-				withContext(Dispatchers.Main) {
-					showInterstitialAd()
-				}
-			}
+		val ad = interstitialAd
+		val now = SystemClock.elapsedRealtime()
+		if (ad != null && activity != null &&
+			(lastInterstitialAt == 0L || now - lastInterstitialAt >= INTERSTITIAL_MIN_INTERVAL_MS)
+		) {
+			ad.show(activity)
+			lastInterstitialAt = now
+			interstitialAd = null
+			loadAd()
+		} else if (ad == null) {
+			loadAd()
 		}
 	}
 
@@ -89,18 +83,17 @@ fun MainScreen(viewModel: SelectionViewModel) {
 			entry<Screen.Home> {
 				SelectionScreen(
 					viewModel = viewModel,
-					onMoreClick = {
-						backStack.add(Screen.Settings)
-						showInterstitialAd()
-					})
+					onMoreClick = { backStack.add(Screen.Settings) })
 			}
 			entry<Screen.Settings> {
 				SettingsScreen(
-					onBackClick = onBackClick,
+					onBackClick = {
+						onBackClick()
+						showInterstitialAd()
+					},
 					onLicensesClick = { backStack.add(Screen.Licenses) })
 			}
 			entry<Screen.Licenses> { LicensesContent(onBackClick = onBackClick) }
 		}
 	)
 }
-
