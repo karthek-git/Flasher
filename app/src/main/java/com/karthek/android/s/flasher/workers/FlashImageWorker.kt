@@ -3,6 +3,7 @@ package com.karthek.android.s.flasher.workers
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.content.pm.ServiceInfo
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
@@ -90,7 +91,13 @@ class FlashImageWorker(appContext: Context, params: WorkerParameters) :
 				.setProgress(100, (progress * 100).toInt(), false)
 				.build()
 
-		setForeground(ForegroundInfo(NOTIFICATION_ID_FLASH, notification))
+		setForeground(
+			ForegroundInfo(
+				NOTIFICATION_ID_FLASH,
+				notification,
+				ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC
+			)
+		)
 	}
 
 	@RequiresApi(Build.VERSION_CODES.O)

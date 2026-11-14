@@ -69,8 +69,8 @@ import com.karthek.android.s.flasher.R
 import com.karthek.android.s.flasher.helpers.UsbMassStorageDevice
 import com.karthek.android.s.flasher.state.SelectionViewModel
 import com.karthek.android.s.flasher.state.selectedDevice
-import com.karthek.android.s.flasher.ui.components.AppOpenAdManager
 import com.karthek.android.s.flasher.state.selectedImage
+import com.karthek.android.s.flasher.ui.components.AppOpenAdManager
 import com.karthek.android.s.flasher.workers.PROGRESS_TAG
 import kotlinx.coroutines.launch
 
@@ -283,11 +283,11 @@ fun FlashProgress(progress: Float, modifier: Modifier) {
 	Column(modifier = modifier) {
 		Text(text = "Writing Image...", style = MaterialTheme.typography.titleSmall)
 		LinearProgressIndicator(
-			progress = progress,
-			modifier = Modifier
-				.padding(vertical = 16.dp)
-				.height(8.dp)
-				.clip(RoundedCornerShape(4.dp))
+		progress = { progress },
+		modifier = Modifier
+						.padding(vertical = 16.dp)
+						.height(8.dp)
+						.clip(RoundedCornerShape(4.dp)),
 		)
 	}
 }

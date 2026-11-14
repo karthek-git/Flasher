@@ -15,6 +15,8 @@ import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.core.content.ContextCompat
+import androidx.core.content.IntentCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
@@ -32,14 +34,13 @@ class SelectionViewModel(private val appContext: Application) : AndroidViewModel
 
 	fun onSelectDevice(index: Int) {
 		val device = devices[index]
-		val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-			PendingIntent.FLAG_MUTABLE
-		} else {
-			0
-		}
-		val permissionIntent =
-			PendingIntent.getBroadcast(appContext, 0, Intent(ACTION_USB_PERMISSION), flags)
-		appContext.registerReceiver(usbReceiver, IntentFilter(ACTION_USB_PERMISSION))
+		// The system fills in the device and result extras, so the PendingIntent must be
+		// mutable. Restricting the intent to our package keeps it explicit, which is
+		// required for mutable PendingIntents when targeting Android 14+.
+		val intent = Intent(ACTION_USB_PERMISSION).setPackage(appContext.packageName)
+		val flags = PendingIntent.FLAG_UPDATE_CURRENT or
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) PendingIntent.FLAG_MUTABLE else 0
+		val permissionIntent = PendingIntent.getBroadcast(appContext, 0, intent, flags)
 		val usbManager = appContext.getSystemService(Context.USB_SERVICE) as UsbManager
 		AppOpenAdManager.suppressNextShow() // returning from the USB permission dialog
 		usbManager.requestPermission(device.usbDevice, permissionIntent)
@@ -77,16 +78,34 @@ class SelectionViewModel(private val appContext: Application) : AndroidViewModel
 		override fun onReceive(context: Context, intent: Intent) {
 			if (ACTION_USB_PERMISSION == intent.action) {
 				synchronized(this) {
-					val device: UsbDevice? = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE)
+					val device = IntentCompat.getParcelableExtra(
+						intent, UsbManager.EXTRA_DEVICE, UsbDevice::class.java
+					)
 
-					if (!intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
-						selectedDevice = null
+					if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false)) {
+						Log.d("usbPerm", "permission granted for device $device")
 					} else {
 						Log.d("usbPerm", "permission denied for device $device")
+						selectedDevice = null
 					}
 				}
 			}
 		}
+	}
+
+	init {
+		// Registered once for the lifetime of the ViewModel. Not exported: the result is
+		// delivered by the system through our own PendingIntent.
+		ContextCompat.registerReceiver(
+			appContext,
+			usbReceiver,
+			IntentFilter(ACTION_USB_PERMISSION),
+			ContextCompat.RECEIVER_NOT_EXPORTED
+		)
+	}
+
+	override fun onCleared() {
+		appContext.unregisterReceiver(usbReceiver)
 	}
 
 	companion object {
