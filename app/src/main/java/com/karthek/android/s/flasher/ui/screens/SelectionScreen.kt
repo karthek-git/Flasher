@@ -1,6 +1,9 @@
 package com.karthek.android.s.flasher.ui.screens
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.hardware.usb.UsbDevice
+import android.os.Build
 import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -25,6 +28,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.MoreVert
+import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.Usb
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -58,12 +62,14 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.core.content.ContextCompat
 import androidx.work.WorkInfo
 import com.karthek.android.s.flasher.R
 import com.karthek.android.s.flasher.helpers.UsbMassStorageDevice
@@ -86,7 +92,10 @@ fun SelectionScreen(viewModel: SelectionViewModel, onMoreClick: () -> Unit) {
 			ModalBottomSheetLayout(
 				onDismissRequest = { openBottomSheet = false }, sheetState = sheetState
 			) {
-				DeviceSelectionSheet(deviceList = viewModel.devices) {
+				DeviceSelectionSheet(
+					deviceList = viewModel.devices,
+					onRefresh = viewModel::refreshDevices
+				) {
 					viewModel.onSelectDevice(it)
 					coroutineScope.launch {
 						sheetState.hide()
@@ -99,6 +108,18 @@ fun SelectionScreen(viewModel: SelectionViewModel, onMoreClick: () -> Unit) {
 			}
 		}
 	}
+
+	// Android 13+ needs a runtime grant for the flash progress notification. The flash itself
+	// runs either way, so start it regardless of the answer.
+	val context = LocalContext.current
+	val notificationPermissionLauncher =
+		rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
+			viewModel.onFlashClick()
+		}
+	val needsNotificationPermission = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+			ContextCompat.checkSelfPermission(
+				context, Manifest.permission.POST_NOTIFICATIONS
+			) != PackageManager.PERMISSION_GRANTED
 
 	val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 	Scaffold(
@@ -116,11 +137,19 @@ fun SelectionScreen(viewModel: SelectionViewModel, onMoreClick: () -> Unit) {
 			val flashWorkData by viewModel.flashProgress.observeAsState()
 			val flashing = !flashWorkData.isNullOrEmpty()
 			SelectDevice(enabled = !flashing, selectedDevice) {
+				viewModel.refreshDevices() // also covers drives attached while the app was closed
 				openBottomSheet = true
 			}
 			SelectImage(enabled = !flashing, viewModel = viewModel)
 			if (selectedDevice != null && selectedImage != null && !flashing) FlashButton(
-				onClick = viewModel::onFlashClick,
+				onClick = {
+					if (needsNotificationPermission) {
+						AppOpenAdManager.suppressNextShow() // returning from the permission dialog
+						notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+					} else {
+						viewModel.onFlashClick()
+					}
+				},
 				modifier = Modifier.align(Alignment.CenterHorizontally)
 			)
 			if (flashing) {
@@ -293,31 +322,45 @@ fun FlashProgress(progress: Float, modifier: Modifier) {
 }
 
 @Composable
-fun DeviceSelectionSheet(deviceList: Array<UsbMassStorageDevice>, onClick: (Int) -> Unit) {
-	if (deviceList.isEmpty()) {
-		Text(
-			text = "No devices found",
-			textAlign = TextAlign.Center,
+fun DeviceSelectionSheet(
+	deviceList: Array<UsbMassStorageDevice>,
+	onRefresh: () -> Unit,
+	onClick: (Int) -> Unit,
+) {
+	Column(
+		modifier = Modifier
+			.defaultMinSize(minHeight = 180.dp)
+			.padding(vertical = 8.dp)
+	) {
+		Row(
+			verticalAlignment = Alignment.CenterVertically,
 			modifier = Modifier
 				.fillMaxWidth()
-				.padding(64.dp)
-		)
-	} else {
-		LazyColumn(
-			modifier = Modifier
-				.defaultMinSize(minHeight = 180.dp)
-				.padding(vertical = 8.dp)
+				.padding(start = 16.dp, end = 8.dp)
 		) {
-			item {
-				Text(
-					text = "DEVICES",
-					color = MaterialTheme.colorScheme.primary,
-					style = MaterialTheme.typography.bodyMedium,
-					modifier = Modifier.padding(start = 16.dp, top = 8.dp)
-				)
+			Text(
+				text = "DEVICES",
+				color = MaterialTheme.colorScheme.primary,
+				style = MaterialTheme.typography.bodyMedium,
+				modifier = Modifier.weight(1f)
+			)
+			IconButton(onClick = onRefresh) {
+				Icon(imageVector = Icons.Outlined.Refresh, contentDescription = "Refresh devices")
 			}
-			itemsIndexed(deviceList) { index, device ->
-				DeviceItem(device = device) { onClick(index) }
+		}
+		if (deviceList.isEmpty()) {
+			Text(
+				text = "No devices found",
+				textAlign = TextAlign.Center,
+				modifier = Modifier
+					.fillMaxWidth()
+					.padding(48.dp)
+			)
+		} else {
+			LazyColumn {
+				itemsIndexed(deviceList) { index, device ->
+					DeviceItem(device = device) { onClick(index) }
+				}
 			}
 		}
 	}

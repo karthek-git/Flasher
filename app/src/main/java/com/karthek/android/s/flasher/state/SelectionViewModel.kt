@@ -27,7 +27,18 @@ import com.karthek.android.s.flasher.ui.components.AppOpenAdManager
 import com.karthek.android.s.flasher.workers.FlashImageWorker
 
 class SelectionViewModel(private val appContext: Application) : AndroidViewModel(appContext) {
-	val devices = UsbMassStorageDevice.getMassStorageDevices(appContext)
+	var devices by mutableStateOf(UsbMassStorageDevice.getMassStorageDevices(appContext))
+		private set
+
+	/** Re-scans connected drives and drops the selection if that drive was unplugged. */
+	fun refreshDevices() {
+		val found = UsbMassStorageDevice.getMassStorageDevices(appContext)
+		devices = found
+		val selected = selectedDevice
+		if (selected != null && found.none { it.usbDevice.deviceName == selected.usbDevice.deviceName }) {
+			selectedDevice = null
+		}
+	}
 
 	val flashProgress =
 		WorkManager.getInstance(appContext).getWorkInfosForUniqueWorkLiveData(FLASH_WORK_NAME)
@@ -93,6 +104,13 @@ class SelectionViewModel(private val appContext: Application) : AndroidViewModel
 		}
 	}
 
+	// Keeps the drive list current when a drive is plugged in or removed while the app is open.
+	private val attachReceiver = object : BroadcastReceiver() {
+		override fun onReceive(context: Context, intent: Intent) {
+			refreshDevices()
+		}
+	}
+
 	init {
 		// Registered once for the lifetime of the ViewModel. Not exported: the result is
 		// delivered by the system through our own PendingIntent.
@@ -102,10 +120,20 @@ class SelectionViewModel(private val appContext: Application) : AndroidViewModel
 			IntentFilter(ACTION_USB_PERMISSION),
 			ContextCompat.RECEIVER_NOT_EXPORTED
 		)
+		ContextCompat.registerReceiver(
+			appContext,
+			attachReceiver,
+			IntentFilter().apply {
+				addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED)
+				addAction(UsbManager.ACTION_USB_DEVICE_DETACHED)
+			},
+			ContextCompat.RECEIVER_NOT_EXPORTED
+		)
 	}
 
 	override fun onCleared() {
 		appContext.unregisterReceiver(usbReceiver)
+		appContext.unregisterReceiver(attachReceiver)
 	}
 
 	companion object {
