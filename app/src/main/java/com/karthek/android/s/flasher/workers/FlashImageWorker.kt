@@ -5,18 +5,23 @@ import android.app.NotificationManager
 import android.content.Context
 import android.content.pm.ServiceInfo
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
-import androidx.work.*
-import me.jahnen.libaums.core.usb.UsbCommunicationFactory.UnderlyingUsbCommunication
-import me.jahnen.libaums.core.usb.UsbCommunicationFactory.registerCommunication
-import me.jahnen.libaums.core.usb.UsbCommunicationFactory.underlyingUsbCommunication
+import androidx.work.CoroutineWorker
+import androidx.work.ForegroundInfo
+import androidx.work.WorkManager
+import androidx.work.WorkerParameters
+import androidx.work.workDataOf
 import com.karthek.android.s.flasher.R
 import com.karthek.android.s.flasher.state.selectedDevice
 import com.karthek.android.s.flasher.state.selectedImage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
+import me.jahnen.libaums.core.usb.UsbCommunicationFactory.UnderlyingUsbCommunication
+import me.jahnen.libaums.core.usb.UsbCommunicationFactory.registerCommunication
+import me.jahnen.libaums.core.usb.UsbCommunicationFactory.underlyingUsbCommunication
 import me.jahnen.libaums.libusbcommunication.LibusbCommunicationCreator
 import java.io.IOException
 import java.nio.ByteBuffer
@@ -42,10 +47,16 @@ class FlashImageWorker(appContext: Context, params: WorkerParameters) :
 				val byteBuffer = ByteBuffer.allocate(BLOCKS_CLUSTER_SIZE)
 				val inputStream = applicationContext.contentResolver.openInputStream(image.uri)
 					?: throw IOException("Unable to open InputStream")
-				var bytesWritten = 0
+				var bytesWritten = 0L
+				var lastReportedStep = -1
 				while (isActive) {
 					val progress = bytesWritten / image.size.toFloat()
-					setForegroundInfo(text = image.name, progress = progress)
+					// Update the notification in 0.05 increments
+					val step = (progress * 100).toInt() / PROGRESS_STEP_PERCENT
+					if (step != lastReportedStep) {
+						lastReportedStep = step
+						setForegroundInfo(text = image.name, progress = progress)
+					}
 					val bytesRead =
 						inputStream.read(byteBuffer.array())
 					if (bytesRead < 0) break
@@ -61,7 +72,10 @@ class FlashImageWorker(appContext: Context, params: WorkerParameters) :
 				device.close()
 			}
 		}
-		if (res.isFailure) return Result.failure()
+		if (res.isFailure) {
+			Log.e("FlashImageWorker", "Flash failed", res.exceptionOrNull())
+			return Result.failure()
+		}
 		return Result.success()
 	}
 
@@ -118,3 +132,4 @@ const val PROGRESS_TAG = "progress"
 const val NOTIFICATION_CHANNEL_ID_FLASH = "flash"
 const val NOTIFICATION_ID_FLASH = 1
 const val BLOCKS_CLUSTER_SIZE = 1048576
+private const val PROGRESS_STEP_PERCENT = 5
