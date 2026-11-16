@@ -16,8 +16,9 @@ import androidx.work.workDataOf
 import com.karthek.android.s.flasher.R
 import com.karthek.android.s.flasher.state.selectedDevice
 import com.karthek.android.s.flasher.state.selectedImage
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.isActive
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 import me.jahnen.libaums.core.usb.UsbCommunicationFactory.UnderlyingUsbCommunication
 import me.jahnen.libaums.core.usb.UsbCommunicationFactory.registerCommunication
@@ -41,37 +42,50 @@ class FlashImageWorker(appContext: Context, params: WorkerParameters) :
 
 		val res = withContext(Dispatchers.IO) {
 			runCatching {
-				device.init()
-				val blockDev = device.blockDevice ?: throw IOException("blockDev init error")
-				val blockSize = blockDev.blockSize
-				val byteBuffer = ByteBuffer.allocate(BLOCKS_CLUSTER_SIZE)
-				val inputStream = applicationContext.contentResolver.openInputStream(image.uri)
-					?: throw IOException("Unable to open InputStream")
-				var bytesWritten = 0L
-				var lastReportedStep = -1
-				while (isActive) {
-					val progress = bytesWritten / image.size.toFloat()
-					// Update the notification in 0.05 increments
-					val step = (progress * 100).toInt() / PROGRESS_STEP_PERCENT
-					if (step != lastReportedStep) {
-						lastReportedStep = step
-						setForegroundInfo(text = image.name, progress = progress)
-					}
-					val bytesRead =
-						inputStream.read(byteBuffer.array())
-					if (bytesRead < 0) break
-					if (bytesRead % blockSize != 0) {
-						for (i in bytesRead until BLOCKS_CLUSTER_SIZE)
-							byteBuffer.put(i, 0)
-					}
+				// The device is released and the stream closed on success, failure and
+				// cancel, so the next attempt doesn't find the USB device still claimed.
+				try {
+					device.init()
+					val blockDev = device.blockDevice ?: throw IOException("blockDev init error")
+					val blockSize = blockDev.blockSize
+					val byteBuffer = ByteBuffer.allocate(BLOCKS_CLUSTER_SIZE)
+					val inputStream = applicationContext.contentResolver.openInputStream(image.uri)
+						?: throw IOException("Unable to open InputStream")
+					inputStream.use { input ->
+						var bytesWritten = 0L
+						var lastReportedStep = -1
+						while (true) {
+							// Throws CancellationException when the user taps Cancel, instead of
+							// leaving the loop and reporting a half-written flash as a success.
+							ensureActive()
+							val progress = bytesWritten / image.size.toFloat()
+							// Update the notification in 5 percent steps
+							val step = (progress * 100).toInt() / PROGRESS_STEP_PERCENT
+							if (step != lastReportedStep) {
+								lastReportedStep = step
+								setForegroundInfo(text = image.name, progress = progress)
+							}
+							val bytesRead = input.read(byteBuffer.array())
+							if (bytesRead < 0) break
+							if (bytesRead % blockSize != 0) {
+								for (i in bytesRead until BLOCKS_CLUSTER_SIZE)
+									byteBuffer.put(i, 0)
+							}
 
-					byteBuffer.position(0)
-					blockDev.write((bytesWritten / blockSize).toLong(), byteBuffer)
-					bytesWritten += BLOCKS_CLUSTER_SIZE
+							byteBuffer.position(0)
+							blockDev.write((bytesWritten / blockSize).toLong(), byteBuffer)
+							bytesWritten += BLOCKS_CLUSTER_SIZE
+						}
+					}
+				} finally {
+					runCatching { device.close() }
 				}
-				device.close()
 			}
 		}
+		// Don't treat a cancel as a flash error: let it propagate so WorkManager marks the
+		// work as cancelled (the finally block above has already released the device).
+		val error = res.exceptionOrNull()
+		if (error is CancellationException) throw error
 		if (res.isFailure) {
 			Log.e("FlashImageWorker", "Flash failed", res.exceptionOrNull())
 			return Result.failure()
