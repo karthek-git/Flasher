@@ -17,8 +17,8 @@ android {
         applicationId = "com.karthek.android.s.flasher"
         minSdk = 24
         targetSdk = 37
-        versionCode = 14
-        versionName = "1.0.10"
+        versionCode = 15
+        versionName = "1.1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
